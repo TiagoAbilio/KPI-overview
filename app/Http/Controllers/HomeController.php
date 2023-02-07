@@ -183,7 +183,7 @@ class HomeController extends Controller
             }
         }
         
-
+        $resultado = array_slice($resultado,0,5);
         return $resultado;
 
     }
@@ -193,7 +193,7 @@ class HomeController extends Controller
 		$date = new DateTime('2023-01-01');
         $dias = $date->diff(new DateTime())->days;
         $ate = intdiv($dias,7);
-        //$resto = $dias%7; --dias
+        $resto = $dias%7;
         $re = array();
         $result = array();
         if($ate < 1){
@@ -224,11 +224,32 @@ class HomeController extends Controller
                         $sair = 1;
                     }
                 }
+                if($resto > 0){
+                    $date = new DateTime($re[count($re)-1]);
+                    $diasX = $date->diff(new DateTime())->days;
+                    $interval = new DateInterval('P1D');
+                    $diasRestantes = array();
+                    for($i = 0; $i < $diasX; $i++){
+                        $va = $date->add($interval);
+                        $o = new ReflectionObject($va);
+                        $p = $o->getProperty('date');
+                        $rep = $p->getValue($va);
+                        array_push($diasRestantes,substr($rep,0,10));
+                    }
+                    array_unshift($result,[$re[count($re)-1],$diasRestantes[count($diasRestantes)-1],$ate+1]);
+                }
+                $result = array_slice($result,0,5);
                 krsort($result);
-                return $result;
+                $data = array();
+                foreach($result as $v){
+                    array_push($data,[date('d-m-Y',strtotime($v[0])),date('d-m-Y',strtotime($v[1])),$v[2]]);
+                }
+                //dd($data); //vejo as datas
+                return $data;
             }
 	
-    }
+    
+        }
     //retorna as 5 ultimas semanas com backlog, abertos e fechados
     public function backlog($valores)
     {
@@ -241,7 +262,10 @@ class HomeController extends Controller
         foreach($dataSemanas as $v){
             $periodo = [];
             for($i = 0; $i < count($dataArray); $i++){
-                if(date('d-m-Y',strtotime(substr($dataArray[$i]->created,0,10))) >= date('d-m-Y',strtotime($v[0])) && date('d-m-Y',strtotime(substr($dataArray[$i]->created,0,10))) < date('d-m-Y',strtotime($v[1]))){
+                if(
+                date('Y-m-d',strtotime(substr($dataArray[$i]->created,0,10))) >= date('Y-m-d',strtotime($v[0])) && 
+                date('Y-m-d',strtotime(substr($dataArray[$i]->created,0,10))) < date('Y-m-d',strtotime($v[1]))
+                ) {
                     $periodo[]=[$dataArray[$i]];
                 }
             }
