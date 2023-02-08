@@ -282,7 +282,7 @@ class HomeController extends Controller
                     $open++;
                 }
             }
-            $backlog[]=['backlog' => count($val),'resolved'=>$resolved,'open'=>$open,'semana'=>$semanas[$chave]];
+            $backlog[]=['backlog' => $open,'resolved'=>$resolved,'open'=>count($val),'semana'=>$semanas[$chave]];
         }
         return $backlog;
     }
